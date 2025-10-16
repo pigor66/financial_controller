@@ -23,9 +23,9 @@ interface AppBarProps {
 
 export function AppBar({ onMenuClick }: AppBarProps) {
     return (
-        <MuiAppBar 
-            position="fixed" 
-            sx={{ 
+        <MuiAppBar
+            position="fixed"
+            sx={{
                 zIndex: (theme) => theme.zIndex.drawer + 1,
                 backgroundColor: '#0a0a0a',
                 borderBottom: '1px solid #1a1a1a',
@@ -93,7 +93,7 @@ export function AppBar({ onMenuClick }: AppBarProps) {
                             <Typography sx={{ fontSize: '1.2rem' }}>💬</Typography>
                         </Badge>
                     </IconButton>
-                    
+
                     <IconButton color="inherit">
                         <Badge badgeContent={3} color="error">
                             <Typography sx={{ fontSize: '1.2rem' }}>🔔</Typography>
@@ -101,9 +101,9 @@ export function AppBar({ onMenuClick }: AppBarProps) {
                     </IconButton>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Avatar 
-                            sx={{ 
-                                width: 32, 
+                        <Avatar
+                            sx={{
+                                width: 32,
                                 height: 32,
                                 backgroundColor: '#ff4444'
                             }}

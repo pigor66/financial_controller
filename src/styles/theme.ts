@@ -1,5 +1,5 @@
 /**
- * Tema customizado do Material-UI - Dark Mode
+ * Tema customizado do Material-UI - Dark Mode (padrão anterior)
  */
 
 import { createTheme } from '@mui/material/styles';
@@ -10,12 +10,12 @@ export const theme = createTheme(
     palette: {
       mode: 'dark',
       primary: {
-        main: '#ff4444', // Vermelho vibrante como na imagem
+        main: '#ff4444',
         light: '#ff6666',
         dark: '#cc0000'
       },
       secondary: {
-        main: '#ff6b35', // Laranja vibrante
+        main: '#ff6b35',
         light: '#ff8a65',
         dark: '#d84315'
       },
@@ -40,8 +40,8 @@ export const theme = createTheme(
         dark: '#1976d2'
       },
       background: {
-        default: '#000000', // Fundo principal ultra escuro
-        paper: '#0a0a0a' // Fundo dos cards/painéis muito escuro
+        default: '#000000',
+        paper: '#0a0a0a'
       },
       text: {
         primary: '#ffffff',
@@ -50,51 +50,22 @@ export const theme = createTheme(
     },
     typography: {
       fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-      h1: {
-        fontSize: '2.5rem',
-        fontWeight: 600
-      },
-      h2: {
-        fontSize: '2rem',
-        fontWeight: 600
-      },
-      h3: {
-        fontSize: '1.75rem',
-        fontWeight: 600
-      },
-      h4: {
-        fontSize: '1.5rem',
-        fontWeight: 600
-      },
-      h5: {
-        fontSize: '1.25rem',
-        fontWeight: 600
-      },
-      h6: {
-        fontSize: '1rem',
-        fontWeight: 600
-      }
+      h1: { fontSize: '2.5rem', fontWeight: 600 },
+      h2: { fontSize: '2rem', fontWeight: 600 },
+      h3: { fontSize: '1.75rem', fontWeight: 600 },
+      h4: { fontSize: '1.5rem', fontWeight: 600 },
+      h5: { fontSize: '1.25rem', fontWeight: 600 },
+      h6: { fontSize: '1rem', fontWeight: 600 }
     },
-    shape: {
-      borderRadius: 8
-    },
+    shape: { borderRadius: 8 },
     components: {
       MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none',
-            fontWeight: 600
-          }
-        }
+        styleOverrides: { root: { textTransform: 'none', fontWeight: 600 } }
       },
       MuiCard: {
-        styleOverrides: {
-          root: {
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }
-        }
+        styleOverrides: { root: { boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }
       }
     }
   },
-  ptBR // Localização em português
+  ptBR
 );
