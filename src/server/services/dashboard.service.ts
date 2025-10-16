@@ -176,10 +176,19 @@ export async function getDashboardStats(
       weekEnd.toISOString().split('T')[0]
     }`
   );
+  console.log(`  FINANCIAL_WEEK_CONFIG.START_DAY: ${FINANCIAL_WEEK_CONFIG.START_DAY}`);
+  console.log(`  Target date: ${targetDate.toISOString().split('T')[0]}`);
 
-  const weekTransactions = allTransactions.filter((t) =>
-    isWithinInterval(parseISO(t.date), { start: weekStart, end: weekEnd })
-  );
+  const weekTransactions = allTransactions.filter((t) => {
+    const transDate = parseISO(t.date);
+    const isInWeek = isWithinInterval(transDate, { start: weekStart, end: weekEnd });
+    
+    if (allTransactions.length <= 5) {
+      console.log(`    Transaction ${t.description} (${t.date}): ${isInWeek ? '✅' : '❌'} in week`);
+    }
+    
+    return isInWeek;
+  });
   console.log(`  Week transactions: ${weekTransactions.length}`);
 
   const weekStats = calculateStats(weekTransactions);
