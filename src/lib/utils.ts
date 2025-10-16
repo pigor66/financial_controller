@@ -18,7 +18,15 @@ export function formatCurrency(value: number): string {
  * Formata uma data para exibição
  */
 export function formatDate(date: string | Date): string {
+  if (!date) return '-';
+  
   const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Valida se a data é válida
+  if (isNaN(dateObj.getTime())) {
+    return '-';
+  }
+  
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -30,7 +38,15 @@ export function formatDate(date: string | Date): string {
  * Formata uma data para exibição com hora
  */
 export function formatDateTime(date: string | Date): string {
+  if (!date) return '-';
+  
   const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Valida se a data é válida
+  if (isNaN(dateObj.getTime())) {
+    return '-';
+  }
+  
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
