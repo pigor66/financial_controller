@@ -1,6 +1,7 @@
 export enum TransactionType {
   INCOME = 'INCOME',
-  EXPENSE = 'EXPENSE'
+  EXPENSE = 'EXPENSE',
+  SAFE_MONEY = 'SAFE_MONEY'
 }
 
 export enum PaymentStatus {
@@ -76,12 +77,23 @@ export interface AccumulatedWealthData {
   accumulated: number;
 }
 
+export interface PredictedVsActual {
+  predicted: { income: number; expense: number; balance: number };
+  actual: { income: number; expense: number; balance: number };
+  pending: { income: number; expense: number; balance: number };
+}
+
 export interface DashboardStats {
   currentWeek: WeeklySummary;
   currentMonth: MonthlySummary;
   topCategories: CategorySummary[];
   monthlyHistory?: MonthlyHistoryData[];
   accumulatedWealth?: AccumulatedWealthData[];
+  predictedVsActual?: PredictedVsActual;
+  safeMoney?: number;
+  availableToSpend?: number;
+  availableToSpendPredicted?: number;
+  availableToSpendReal?: number;
 }
 
 export interface ApiResponse<T> {

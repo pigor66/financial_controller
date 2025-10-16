@@ -29,6 +29,8 @@ import { PendingTransactionsBanner } from '@/components/features/PendingTransact
 import { AnimatedIcon } from '@/components/common/AnimatedIcon';
 import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
+import { PredictedVsActualBarChart } from '@/components/charts/PredictedVsActualBarChart';
+import { CompositionDonutChart } from '@/components/charts/CompositionDonutChart';
 import { AccumulatedWealthChart } from '@/components/charts/AccumulatedWealthChart';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { DashboardStats } from '@/shared/types';
@@ -128,6 +130,10 @@ export default function DashboardPage() {
                                 subtitle={`${stats.currentWeek.transactions.filter(t => t.type === 'INCOME').length} transação(ões)`}
                                 icon={<AnimatedIcon animationType="bounce" color="#4caf50"><FaArrowTrendUp size={40} /></AnimatedIcon>}
                                 delay={0}
+                                forecastValue={formatCurrency((stats.predictedVsActual?.predicted.income || 0))}
+                                progressPercent={(stats.predictedVsActual && stats.predictedVsActual.predicted.income > 0)
+                                    ? (stats.predictedVsActual.actual.income / stats.predictedVsActual.predicted.income) * 100
+                                    : 0}
                             />
                         </Grid>
 
@@ -139,6 +145,10 @@ export default function DashboardPage() {
                                 subtitle={`${stats.currentWeek.transactions.filter(t => t.type === 'EXPENSE').length} transação(ões)`}
                                 icon={<AnimatedIcon animationType="pulse" color="#ff4444"><FaArrowTrendDown size={40} /></AnimatedIcon>}
                                 delay={0.1}
+                                forecastValue={formatCurrency((stats.predictedVsActual?.predicted.expense || 0))}
+                                progressPercent={(stats.predictedVsActual && stats.predictedVsActual.predicted.expense > 0)
+                                    ? (stats.predictedVsActual.actual.expense / stats.predictedVsActual.predicted.expense) * 100
+                                    : 0}
                             />
                         </Grid>
 
@@ -149,6 +159,10 @@ export default function DashboardPage() {
                                 color={stats.currentWeek.balance >= 0 ? 'success' : 'error'}
                                 icon={<AnimatedIcon animationType="scale" color={stats.currentWeek.balance >= 0 ? '#4caf50' : '#ff4444'}><FaWallet size={40} /></AnimatedIcon>}
                                 delay={0.2}
+                                forecastValue={formatCurrency((stats.predictedVsActual?.predicted.balance || 0))}
+                                progressPercent={(stats.predictedVsActual && stats.predictedVsActual.predicted.balance !== 0)
+                                    ? (stats.predictedVsActual.actual.balance / Math.abs(stats.predictedVsActual.predicted.balance)) * 100
+                                    : 0}
                             />
                         </Grid>
                     </Grid>
@@ -190,19 +204,55 @@ export default function DashboardPage() {
                                 delay={0.5}
                             />
                         </Grid>
+
+                        {/* Cofrinho (Safe Money) */}
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <StatsCard
+                                title="Cofrinho (Safe Money)"
+                                value={formatCurrency(stats.safeMoney || 0)}
+                                color="info"
+                                delay={0.6}
+                            />
+                        </Grid>
+
+                        {/* Disponível para Gastar */}
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <StatsCard
+                                title="Disponível para Gastar (Previsto | Real)"
+                                value={`${formatCurrency(stats.availableToSpendPredicted || stats.availableToSpend || 0)} | ${formatCurrency(stats.availableToSpendReal || 0)}`}
+                                color={(stats.availableToSpend || 0) >= 0 ? 'success' : 'error'}
+                                delay={0.7}
+                            />
+                        </Grid>
                     </Grid>
                 </Box>
 
-                {/* Gráficos de Análise */}
+                {/* Gráficos de Análise (prioridade para gráficos) */}
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', mb: 3 }}>
                         Análise Financeira
                     </Typography>
 
                     <Grid container spacing={3}>
-                        {/* Gráfico de Evolução Mensal */}
-                        {stats.monthlyHistory && stats.monthlyHistory.length > 0 && (
+                        {/* Predisto vs Real (barras) */}
+                        {stats.predictedVsActual && (
                             <Grid size={{ xs: 12, lg: 8 }}>
+                                <PredictedVsActualBarChart data={stats.predictedVsActual} />
+                            </Grid>
+                        )}
+
+                        {/* Composição do mês (receita x despesa x cofrinho) */}
+                        <Grid size={{ xs: 12, lg: 4 }}>
+                            <CompositionDonutChart
+                                income={stats.currentMonth.totalIncome}
+                                expense={stats.currentMonth.totalExpense}
+                                safeMoney={stats.safeMoney || 0}
+                            />
+                        </Grid>
+
+                        {/* Evolução Mensal */}
+                        {stats.monthlyHistory && stats.monthlyHistory.length > 0 && (
+                            <Grid size={{ xs: 12 }}>
                                 <IncomeExpenseChart
                                     data={stats.monthlyHistory}
                                     title="Evolução de Receitas e Despesas (6 meses)"
@@ -210,13 +260,10 @@ export default function DashboardPage() {
                             </Grid>
                         )}
 
-                        {/* Gráfico de Pizza de Categorias */}
+                        {/* Pizza de Categorias */}
                         {stats.topCategories.length > 0 && (
-                            <Grid size={{ xs: 12, lg: 4 }}>
-                                <CategoryPieChart
-                                    data={stats.topCategories}
-                                    title="Despesas por Categoria"
-                                />
+                            <Grid size={{ xs: 12 }}>
+                                <CategoryPieChart data={stats.topCategories} title="Despesas por Categoria" />
                             </Grid>
                         )}
                     </Grid>

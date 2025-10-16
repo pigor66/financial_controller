@@ -8,7 +8,9 @@ import {
   TransactionType,
   MonthlyHistoryData,
   AccumulatedWealthData,
-  Transaction
+  Transaction,
+  PaymentStatus,
+  PredictedVsActual
 } from '@/shared/types';
 import { getTransactions } from './transaction.service';
 import {
@@ -185,6 +187,50 @@ function calculateStats(transactions: Transaction[]) {
 }
 
 /**
+ * Calcula previsto vs realizado com base no status das transações
+ */
+function calculatePredictedVsActual(
+  transactions: Transaction[]
+): PredictedVsActual {
+  const paid = transactions.filter((t) => t.status === PaymentStatus.PAID);
+  const pending = transactions.filter(
+    (t) => t.status === PaymentStatus.PENDING
+  );
+
+  const actualIncome = paid
+    .filter((t) => t.type === TransactionType.INCOME)
+    .reduce((s, t) => s + t.amount, 0);
+  const actualExpense = paid
+    .filter((t) => t.type === TransactionType.EXPENSE)
+    .reduce((s, t) => s + t.amount, 0);
+
+  const pendingIncome = pending
+    .filter((t) => t.type === TransactionType.INCOME)
+    .reduce((s, t) => s + t.amount, 0);
+  const pendingExpense = pending
+    .filter((t) => t.type === TransactionType.EXPENSE)
+    .reduce((s, t) => s + t.amount, 0);
+
+  return {
+    predicted: {
+      income: actualIncome + pendingIncome,
+      expense: actualExpense + pendingExpense,
+      balance: actualIncome + pendingIncome - (actualExpense + pendingExpense)
+    },
+    actual: {
+      income: actualIncome,
+      expense: actualExpense,
+      balance: actualIncome - actualExpense
+    },
+    pending: {
+      income: pendingIncome,
+      expense: pendingExpense,
+      balance: pendingIncome - pendingExpense
+    }
+  };
+}
+
+/**
  * Agrupa transações por categoria
  */
 function getCategoryBreakdown(transactions: Transaction[]) {
@@ -251,7 +297,18 @@ export async function getDashboardStats(
   }
 
   // Semana atual (baseado no FINANCIAL_WEEK_CONFIG)
-  const { weekStart, weekEnd } = getFinancialWeek(targetDate);
+  // Usa o dia atual quando o mês é o corrente; senão usa o dia 15 do mês alvo
+  const nowRef = new Date();
+  const monthEndRef = endOfMonth(targetDate);
+  const referenceDate = isSameMonth(targetDate, nowRef)
+    ? nowRef
+    : new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        Math.min(15, monthEndRef.getDate())
+      );
+
+  const { weekStart, weekEnd } = getFinancialWeek(referenceDate);
   console.log(
     `  Current week: ${weekStart.toISOString().split('T')[0]} to ${
       weekEnd.toISOString().split('T')[0]
@@ -290,9 +347,35 @@ export async function getDashboardStats(
     isWithinInterval(parseISO(t.date), { start: monthStart, end: monthEnd })
   );
   const monthStats = calculateStats(monthTransactions);
+  // Safe money (cofrinho) do mês selecionado
+  const safeMoneyPaid = monthTransactions
+    .filter(
+      (t) =>
+        t.type === TransactionType.SAFE_MONEY && t.status === PaymentStatus.PAID
+    )
+    .reduce((sum, t) => sum + t.amount, 0);
+  const safeMoneyPending = monthTransactions
+    .filter(
+      (t) =>
+        t.type === TransactionType.SAFE_MONEY &&
+        t.status === PaymentStatus.PENDING
+    )
+    .reduce((sum, t) => sum + t.amount, 0);
+  const safeMoney = safeMoneyPaid + safeMoneyPending;
 
   // Categorias do mês
   const topCategories = getCategoryBreakdown(monthTransactions).slice(0, 5);
+
+  // Previsto vs Realizado do mês selecionado
+  const predictedVsActual = calculatePredictedVsActual(monthTransactions);
+  const availableToSpendPredicted =
+    predictedVsActual.predicted.income -
+    predictedVsActual.predicted.expense -
+    (safeMoneyPaid + safeMoneyPending);
+  const availableToSpendReal =
+    predictedVsActual.actual.income -
+    predictedVsActual.actual.expense -
+    safeMoneyPaid;
 
   // Calcula semanas do mês atual para o reports
   const weeksSummary = getFinancialWeeksOfMonth(targetDate).map(
@@ -369,6 +452,12 @@ export async function getDashboardStats(
     },
     topCategories,
     monthlyHistory,
-    accumulatedWealth
+    accumulatedWealth,
+    // novos campos
+    safeMoney,
+    availableToSpend: availableToSpendPredicted,
+    availableToSpendPredicted,
+    availableToSpendReal,
+    predictedVsActual
   };
 }

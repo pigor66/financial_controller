@@ -15,9 +15,12 @@ interface StatsCardProps {
     icon?: React.ReactNode;
     color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info';
     delay?: number;
+    // Comparativo previsto vs realizado
+    forecastValue?: string; // valor previsto formatado
+    progressPercent?: number; // 0-100 de realizado sobre previsto
 }
 
-export function StatsCard({ title, value, subtitle, icon, color = 'primary', delay = 0 }: StatsCardProps) {
+export function StatsCard({ title, value, subtitle, icon, color = 'primary', delay = 0, forecastValue, progressPercent }: StatsCardProps) {
     const [isHovered, setIsHovered] = React.useState(false);
 
     // Cores baseadas no tipo
@@ -158,6 +161,20 @@ export function StatsCard({ title, value, subtitle, icon, color = 'primary', del
                             >
                                 {subtitle}
                             </Typography>
+                        )}
+
+                        {/* Previsto vs Realizado embutido */}
+                        {forecastValue !== undefined && progressPercent !== undefined && (
+                            <Box sx={{ width: '100%', mt: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography variant="caption" sx={{ color: '#b0b0b0' }}>Previsto</Typography>
+                                    <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 600 }}>{forecastValue}</Typography>
+                                </Box>
+                                <Box sx={{ height: 6, bgcolor: '#1a1a1a', borderRadius: 1, overflow: 'hidden' }}>
+                                    <Box sx={{ height: '100%', width: `${Math.min(Math.max(progressPercent, 0), 100)}%`, bgcolor: selectedColor }} />
+                                </Box>
+                                <Typography variant="caption" sx={{ color: '#b0b0b0', mt: 0.5, display: 'block' }}>{Math.min(Math.max(progressPercent, 0), 100).toFixed(1)}% realizado</Typography>
+                            </Box>
                         )}
                     </Box>
                 </CardContent>

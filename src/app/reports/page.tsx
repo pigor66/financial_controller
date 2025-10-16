@@ -16,6 +16,7 @@ import {
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MonthSelector } from '@/components/common/MonthSelector';
+import { PredictedVsActualCard } from '@/components/common/PredictedVsActualCard';
 import { formatCurrency } from '@/lib/utils';
 import { DashboardStats } from '@/shared/types';
 import { CATEGORY_LABELS } from '@/shared/constants';
@@ -99,6 +100,13 @@ export default function ReportsPage() {
                 {/* Seletor de Mês */}
                 <MonthSelector selectedDate={selectedDate} onDateChange={handleDateChange} />
 
+                {/* Previsto vs Realizado */}
+                {stats.predictedVsActual && (
+                    <Box sx={{ mt: 2 }}>
+                        <PredictedVsActualCard data={stats.predictedVsActual} />
+                    </Box>
+                )}
+
                 {/* Resumo Mensal */}
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" gutterBottom>
@@ -115,6 +123,11 @@ export default function ReportsPage() {
                                     <Typography variant="h4" color="success.main" fontWeight={600}>
                                         {formatCurrency(stats.currentMonth.totalIncome)}
                                     </Typography>
+                                    {typeof stats.safeMoney === 'number' && (
+                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                            Cofrinho: {formatCurrency(stats.safeMoney)}
+                                        </Typography>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -145,6 +158,11 @@ export default function ReportsPage() {
                                     >
                                         {formatCurrency(stats.currentMonth.balance)}
                                     </Typography>
+                                    {typeof stats.availableToSpendPredicted === 'number' && typeof stats.availableToSpendReal === 'number' && (
+                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                            Disponível (Previsto | Real): {formatCurrency(stats.availableToSpendPredicted)} | {formatCurrency(stats.availableToSpendReal)}
+                                        </Typography>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Grid>

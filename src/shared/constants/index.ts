@@ -22,7 +22,8 @@ export const CATEGORY_LABELS: Record<TransactionCategory, string> = {
 
 export const TYPE_LABELS: Record<TransactionType, string> = {
   [TransactionType.INCOME]: 'Receita',
-  [TransactionType.EXPENSE]: 'Despesa'
+  [TransactionType.EXPENSE]: 'Despesa',
+  [TransactionType.SAFE_MONEY]: 'Cofrinho'
 };
 
 export const STATUS_LABELS: Record<
