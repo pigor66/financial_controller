@@ -15,12 +15,74 @@ import {
   endOfMonth,
   subMonths,
   format,
-  startOfWeek,
-  endOfWeek,
   isWithinInterval,
-  parseISO
+  parseISO,
+  addDays,
+  isAfter
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { FINANCIAL_WEEK_CONFIG } from '@/shared/constants';
+
+/**
+ * Calcula o início e fim da semana financeira baseado no dia configurado
+ * Exemplo: se START_DAY = 15, as semanas são:
+ * - 01 a 14 (semana parcial)
+ * - 15 a 21 (semana 1)
+ * - 22 a 28 (semana 2)
+ * - 29 a 31 (semana 3)
+ */
+function getFinancialWeek(targetDate: Date): {
+  weekStart: Date;
+  weekEnd: Date;
+} {
+  const startDay = FINANCIAL_WEEK_CONFIG.START_DAY;
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth();
+  const day = targetDate.getDate();
+  const monthEnd = endOfMonth(targetDate);
+
+  // Gera todas as semanas do mês
+  const weeks: { weekStart: Date; weekEnd: Date }[] = [];
+
+  // Semana parcial antes do dia inicial (se START_DAY > 1)
+  if (startDay > 1) {
+    weeks.push({
+      weekStart: startOfMonth(targetDate),
+      weekEnd: new Date(year, month, startDay - 1)
+    });
+  }
+
+  // Semanas normais de 7 dias
+  let currentStart = new Date(year, month, startDay);
+  while (currentStart <= monthEnd) {
+    let currentEnd = addDays(currentStart, 6);
+    if (isAfter(currentEnd, monthEnd)) {
+      currentEnd = monthEnd;
+    }
+
+    weeks.push({
+      weekStart: new Date(currentStart),
+      weekEnd: new Date(currentEnd)
+    });
+
+    currentStart = addDays(currentEnd, 1);
+  }
+
+  // Encontra a semana que contém a data atual
+  const currentWeek = weeks.find((week) =>
+    isWithinInterval(targetDate, { start: week.weekStart, end: week.weekEnd })
+  );
+
+  if (!currentWeek) {
+    // Fallback: retorna o mês inteiro
+    return {
+      weekStart: startOfMonth(targetDate),
+      weekEnd: monthEnd
+    };
+  }
+
+  return currentWeek;
+}
 
 /**
  * Calcula estatísticas de uma lista de transações
@@ -90,9 +152,8 @@ export async function getDashboardStats(
     endDate: newestDate.toISOString()
   });
 
-  // Semana atual
-  const weekStart = startOfWeek(targetDate, { locale: ptBR });
-  const weekEnd = endOfWeek(targetDate, { locale: ptBR });
+  // Semana atual (baseado no FINANCIAL_WEEK_CONFIG)
+  const { weekStart, weekEnd } = getFinancialWeek(targetDate);
   const weekTransactions = allTransactions.filter((t) =>
     isWithinInterval(parseISO(t.date), { start: weekStart, end: weekEnd })
   );
