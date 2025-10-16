@@ -24,24 +24,19 @@ import { ptBR } from 'date-fns/locale';
 import { FINANCIAL_WEEK_CONFIG } from '@/shared/constants';
 
 /**
- * Calcula o início e fim da semana financeira baseado no dia configurado
+ * Calcula as semanas financeiras do mês baseado no dia configurado
  * Exemplo: se START_DAY = 15, as semanas são:
  * - 01 a 14 (semana parcial)
  * - 15 a 21 (semana 1)
  * - 22 a 28 (semana 2)
  * - 29 a 31 (semana 3)
  */
-function getFinancialWeek(targetDate: Date): {
-  weekStart: Date;
-  weekEnd: Date;
-} {
+function getFinancialWeeksOfMonth(targetDate: Date): { weekStart: Date; weekEnd: Date }[] {
   const startDay = FINANCIAL_WEEK_CONFIG.START_DAY;
   const year = targetDate.getFullYear();
   const month = targetDate.getMonth();
-  const day = targetDate.getDate();
   const monthEnd = endOfMonth(targetDate);
 
-  // Gera todas as semanas do mês
   const weeks: { weekStart: Date; weekEnd: Date }[] = [];
 
   // Semana parcial antes do dia inicial (se START_DAY > 1)
@@ -68,6 +63,23 @@ function getFinancialWeek(targetDate: Date): {
     currentStart = addDays(currentEnd, 1);
   }
 
+  return weeks;
+}
+
+/**
+ * Calcula o início e fim da semana financeira baseado no dia configurado
+ * Exemplo: se START_DAY = 15, as semanas são:
+ * - 01 a 14 (semana parcial)
+ * - 15 a 21 (semana 1)
+ * - 22 a 28 (semana 2)
+ * - 29 a 31 (semana 3)
+ */
+function getFinancialWeek(targetDate: Date): {
+  weekStart: Date;
+  weekEnd: Date;
+} {
+  const weeks = getFinancialWeeksOfMonth(targetDate);
+
   // Encontra a semana que contém a data atual
   const currentWeek = weeks.find((week) =>
     isWithinInterval(targetDate, { start: week.weekStart, end: week.weekEnd })
@@ -77,7 +89,7 @@ function getFinancialWeek(targetDate: Date): {
     // Fallback: retorna o mês inteiro
     return {
       weekStart: startOfMonth(targetDate),
-      weekEnd: monthEnd
+      weekEnd: endOfMonth(targetDate)
     };
   }
 
@@ -176,17 +188,26 @@ export async function getDashboardStats(
       weekEnd.toISOString().split('T')[0]
     }`
   );
-  console.log(`  FINANCIAL_WEEK_CONFIG.START_DAY: ${FINANCIAL_WEEK_CONFIG.START_DAY}`);
+  console.log(
+    `  FINANCIAL_WEEK_CONFIG.START_DAY: ${FINANCIAL_WEEK_CONFIG.START_DAY}`
+  );
   console.log(`  Target date: ${targetDate.toISOString().split('T')[0]}`);
 
   const weekTransactions = allTransactions.filter((t) => {
     const transDate = parseISO(t.date);
-    const isInWeek = isWithinInterval(transDate, { start: weekStart, end: weekEnd });
-    
+    const isInWeek = isWithinInterval(transDate, {
+      start: weekStart,
+      end: weekEnd
+    });
+
     if (allTransactions.length <= 5) {
-      console.log(`    Transaction ${t.description} (${t.date}): ${isInWeek ? '✅' : '❌'} in week`);
+      console.log(
+        `    Transaction ${t.description} (${t.date}): ${
+          isInWeek ? '✅' : '❌'
+        } in week`
+      );
     }
-    
+
     return isInWeek;
   });
   console.log(`  Week transactions: ${weekTransactions.length}`);
@@ -203,6 +224,24 @@ export async function getDashboardStats(
 
   // Categorias do mês
   const topCategories = getCategoryBreakdown(monthTransactions).slice(0, 5);
+
+  // Calcula semanas do mês atual para o reports
+  const weeksSummary = getFinancialWeeksOfMonth(targetDate).map(({ weekStart, weekEnd }) => {
+    const weekTransactions = monthTransactions.filter((t) => {
+      const transactionDate = parseISO(t.date);
+      return isWithinInterval(transactionDate, { start: weekStart, end: weekEnd });
+    });
+    
+    const weekStats = calculateStats(weekTransactions);
+    return {
+      weekStart: weekStart.toISOString(),
+      weekEnd: weekEnd.toISOString(),
+      totalIncome: weekStats.totalIncome,
+      totalExpense: weekStats.totalExpense,
+      balance: weekStats.balance,
+      transactions: weekTransactions
+    };
+  });
 
   // Histórico mensal (últimos 6 meses)
   const monthlyHistory: MonthlyHistoryData[] = [];
@@ -241,7 +280,7 @@ export async function getDashboardStats(
       totalIncome: monthStats.totalIncome,
       totalExpense: monthStats.totalExpense,
       balance: monthStats.balance,
-      weeksSummary: [] // Não precisa para o dashboard principal
+      weeksSummary
     },
     topCategories,
     monthlyHistory
