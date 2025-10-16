@@ -83,6 +83,25 @@ export interface PredictedVsActual {
   pending: { income: number; expense: number; balance: number };
 }
 
+export interface SparklineData {
+  labels: string[];
+  datasets: Array<{
+    data: number[];
+    borderColor?: string;
+    backgroundColor?: string | string[];
+    tension?: number;
+    pointRadius?: number;
+    pointHoverRadius?: number;
+    borderWidth?: number;
+  }>;
+}
+
+export interface SparklineDataSets {
+  income: SparklineData;
+  expense: SparklineData;
+  balance: SparklineData;
+}
+
 export interface DashboardStats {
   currentWeek: WeeklySummary;
   currentMonth: MonthlySummary;
@@ -94,6 +113,8 @@ export interface DashboardStats {
   availableToSpend?: number;
   availableToSpendPredicted?: number;
   availableToSpendReal?: number;
+  weeklySparklineData?: SparklineDataSets;
+  monthlySparklineData?: SparklineDataSets;
 }
 
 export interface ApiResponse<T> {

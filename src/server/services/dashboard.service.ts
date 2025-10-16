@@ -10,7 +10,9 @@ import {
   AccumulatedWealthData,
   Transaction,
   PaymentStatus,
-  PredictedVsActual
+  PredictedVsActual,
+  SparklineData,
+  SparklineDataSets
 } from '@/shared/types';
 import { getTransactions } from './transaction.service';
 import {
@@ -434,6 +436,154 @@ export async function getDashboardStats(
     }
   }
 
+  // Funções para gerar dados de sparklines
+  function generateWeeklySparklineData(
+    targetDate: Date,
+    transactions: Transaction[]
+  ) {
+    const weeks = getFinancialWeeksOfMonth(targetDate);
+    const weeklyData = weeks.map((week) => {
+      const weekTxs = transactions.filter((tx) =>
+        isWithinInterval(parseISO(tx.date), {
+          start: week.weekStart,
+          end: week.weekEnd
+        })
+      );
+      const stats = calculateStats(weekTxs);
+      return {
+        week: `Sem ${weeks.indexOf(week) + 1}`,
+        income: stats.totalIncome,
+        expense: stats.totalExpense,
+        balance: stats.balance
+      };
+    });
+
+    return {
+      income: {
+        labels: weeklyData.map((d) => d.week),
+        datasets: [
+          {
+            data: weeklyData.map((d) => d.income),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            pointRadius: 1,
+            pointHoverRadius: 2,
+            borderWidth: 2
+          }
+        ]
+      },
+      expense: {
+        labels: weeklyData.map((d) => d.week),
+        datasets: [
+          {
+            data: weeklyData.map((d) => d.expense),
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            tension: 0.4,
+            pointRadius: 1,
+            pointHoverRadius: 2,
+            borderWidth: 2
+          }
+        ]
+      },
+      balance: {
+        labels: weeklyData.map((d) => d.week),
+        datasets: [
+          {
+            data: weeklyData.map((d) => d.balance),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            pointRadius: 1,
+            pointHoverRadius: 2,
+            borderWidth: 2
+          }
+        ]
+      }
+    };
+  }
+
+  function generateMonthlySparklineData(
+    targetDate: Date,
+    transactions: Transaction[]
+  ) {
+    const monthlyData = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const monthDate = subMonths(targetDate, i);
+      const mStart = startOfMonth(monthDate);
+      const mEnd = endOfMonth(monthDate);
+
+      const monthTxs = transactions.filter((tx) =>
+        isWithinInterval(parseISO(tx.date), { start: mStart, end: mEnd })
+      );
+      const stats = calculateStats(monthTxs);
+
+      monthlyData.push({
+        month: format(monthDate, 'MMM', { locale: ptBR }),
+        income: stats.totalIncome,
+        expense: stats.totalExpense,
+        balance: stats.balance
+      });
+    }
+
+    return {
+      income: {
+        labels: monthlyData.map((d) => d.month),
+        datasets: [
+          {
+            data: monthlyData.map((d) => d.income),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            pointRadius: 1,
+            pointHoverRadius: 2,
+            borderWidth: 2
+          }
+        ]
+      },
+      expense: {
+        labels: monthlyData.map((d) => d.month),
+        datasets: [
+          {
+            data: monthlyData.map((d) => d.expense),
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            tension: 0.4,
+            pointRadius: 1,
+            pointHoverRadius: 2,
+            borderWidth: 2
+          }
+        ]
+      },
+      balance: {
+        labels: monthlyData.map((d) => d.month),
+        datasets: [
+          {
+            data: monthlyData.map((d) => d.balance),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            pointRadius: 1,
+            pointHoverRadius: 2,
+            borderWidth: 2
+          }
+        ]
+      }
+    };
+  }
+
+  // Gerar dados para sparklines
+  const weeklySparklineData = generateWeeklySparklineData(
+    targetDate,
+    allTransactions
+  );
+  const monthlySparklineData = generateMonthlySparklineData(
+    targetDate,
+    allTransactions
+  );
+
   return {
     currentWeek: {
       weekStart: weekStart.toISOString(),
@@ -458,6 +608,9 @@ export async function getDashboardStats(
     availableToSpend: availableToSpendPredicted,
     availableToSpendPredicted,
     availableToSpendReal,
-    predictedVsActual
+    predictedVsActual,
+    // dados para sparklines
+    weeklySparklineData,
+    monthlySparklineData
   };
 }
