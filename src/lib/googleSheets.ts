@@ -16,6 +16,16 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
  * Cria e retorna um cliente autenticado do Google Sheets
  */
 export async function getSheetsClient() {
+  // Debug - mostra o que está configurado
+  console.log('📊 Google Sheets Config:');
+  console.log('  GOOGLE_SPREADSHEET_ID:', process.env.GOOGLE_SPREADSHEET_ID ? '✅ SET' : '❌ NOT SET');
+  console.log('  GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? '✅ SET' : '❌ NOT SET');
+  console.log('  GOOGLE_PRIVATE_KEY:', process.env.GOOGLE_PRIVATE_KEY ? '✅ SET' : '❌ NOT SET');
+  
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+    throw new Error('❌ Google Sheets credentials not configured in .env.local');
+  }
+
   try {
     // Autenticação usando Service Account
     const auth = new google.auth.GoogleAuth({
@@ -31,8 +41,8 @@ export async function getSheetsClient() {
 
     return sheets;
   } catch (error) {
-    console.error('Erro ao autenticar com Google Sheets:', error);
-    throw new Error('Falha na autenticação com Google Sheets');
+    console.error('❌ Error authenticating with Google Sheets:', error);
+    throw new Error('Failed to authenticate with Google Sheets');
   }
 }
 
@@ -43,7 +53,8 @@ export function getSpreadsheetId(): string {
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 
   if (!spreadsheetId) {
-    throw new Error('GOOGLE_SPREADSHEET_ID não configurado');
+    console.error('❌ GOOGLE_SPREADSHEET_ID not configured in .env.local');
+    throw new Error('GOOGLE_SPREADSHEET_ID not configured');
   }
 
   return spreadsheetId;
