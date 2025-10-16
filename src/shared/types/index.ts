@@ -64,10 +64,18 @@ export interface CategorySummary {
   transactionCount: number;
 }
 
+export interface MonthlyHistoryData {
+  month: string;
+  income: number;
+  expense: number;
+  balance: number;
+}
+
 export interface DashboardStats {
   currentWeek: WeeklySummary;
   currentMonth: MonthlySummary;
   topCategories: CategorySummary[];
+  monthlyHistory?: MonthlyHistoryData[];
 }
 
 export interface ApiResponse<T> {

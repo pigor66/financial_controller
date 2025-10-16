@@ -44,7 +44,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     };
 
     const drawerContent = (
-        <Box sx={{ height: '100%', backgroundColor: '#1a1a1a' }}>
+        <Box sx={{ height: '100%', backgroundColor: '#0a0a0a' }}>
             {/* Logo/Brand */}
             <Box sx={{ p: 2, textAlign: 'center' }}>
                 <Typography
@@ -55,7 +55,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                         fontFamily: 'monospace'
                     }}
                 >
-                    DarkPan
+                    💰 FinControl
                 </Typography>
             </Box>
 
@@ -80,7 +80,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                 </Box>
             </Box>
 
-            <Divider sx={{ borderColor: '#333333' }} />
+            <Divider sx={{ borderColor: '#1a1a1a' }} />
 
             {/* Navigation Menu */}
             <List sx={{ px: 1 }}>
@@ -91,12 +91,12 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                             onClick={() => handleNavigation(item.path)}
                             sx={{
                                 borderRadius: 1,
-                                backgroundColor: pathname === item.path ? '#333333' : 'transparent',
+                                backgroundColor: pathname === item.path ? '#1a1a1a' : 'transparent',
                                 '&:hover': {
-                                    backgroundColor: '#333333',
+                                    backgroundColor: '#1a1a1a',
                                 },
                                 '&.Mui-selected': {
-                                    backgroundColor: '#333333',
+                                    backgroundColor: '#1a1a1a',
                                     '& .MuiListItemIcon-root': {
                                         color: '#ff4444',
                                     },
@@ -141,8 +141,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                     '& .MuiDrawer-paper': {
                         boxSizing: 'border-box',
                         width: drawerWidth,
-                        backgroundColor: '#1a1a1a',
-                        borderRight: '1px solid #333333'
+                        backgroundColor: '#0a0a0a',
+                        borderRight: '1px solid #1a1a1a'
                     },
                 }}
             >
@@ -159,8 +159,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                     '& .MuiDrawer-paper': {
                         width: drawerWidth,
                         boxSizing: 'border-box',
-                        backgroundColor: '#1a1a1a',
-                        borderRight: '1px solid #333333'
+                        backgroundColor: '#0a0a0a',
+                        borderRight: '1px solid #1a1a1a'
                     },
                 }}
                 open

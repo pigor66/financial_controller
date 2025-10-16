@@ -13,11 +13,22 @@ import {
     CardContent,
     Alert,
 } from '@mui/material';
+import {
+    FaArrowTrendUp,
+    FaArrowTrendDown,
+    FaWallet,
+    FaChartLine,
+    FaChartPie
+} from 'react-icons/fa6';
+import { TbMoneybag } from 'react-icons/tb';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatsCard } from '@/components/common/StatsCard';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MonthSelector } from '@/components/common/MonthSelector';
 import { PendingTransactionsBanner } from '@/components/features/PendingTransactionsBanner';
+import { AnimatedIcon } from '@/components/common/AnimatedIcon';
+import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart';
+import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { DashboardStats } from '@/shared/types';
 
@@ -114,7 +125,8 @@ export default function DashboardPage() {
                                 value={formatCurrency(stats.currentWeek.totalIncome)}
                                 color="success"
                                 subtitle={`${stats.currentWeek.transactions.filter(t => t.type === 'INCOME').length} transação(ões)`}
-                                icon={<Typography sx={{ fontSize: '3rem' }}>📈</Typography>}
+                                icon={<AnimatedIcon animationType="bounce" color="#4caf50"><FaArrowTrendUp size={40} /></AnimatedIcon>}
+                                delay={0}
                             />
                         </Grid>
 
@@ -124,7 +136,8 @@ export default function DashboardPage() {
                                 value={formatCurrency(stats.currentWeek.totalExpense)}
                                 color="error"
                                 subtitle={`${stats.currentWeek.transactions.filter(t => t.type === 'EXPENSE').length} transação(ões)`}
-                                icon={<Typography sx={{ fontSize: '3rem' }}>📉</Typography>}
+                                icon={<AnimatedIcon animationType="pulse" color="#ff4444"><FaArrowTrendDown size={40} /></AnimatedIcon>}
+                                delay={0.1}
                             />
                         </Grid>
 
@@ -133,7 +146,8 @@ export default function DashboardPage() {
                                 title="Saldo Semanal"
                                 value={formatCurrency(stats.currentWeek.balance)}
                                 color={stats.currentWeek.balance >= 0 ? 'success' : 'error'}
-                                icon={<Typography sx={{ fontSize: '3rem' }}>💰</Typography>}
+                                icon={<AnimatedIcon animationType="scale" color={stats.currentWeek.balance >= 0 ? '#4caf50' : '#ff4444'}><FaWallet size={40} /></AnimatedIcon>}
+                                delay={0.2}
                             />
                         </Grid>
                     </Grid>
@@ -151,7 +165,8 @@ export default function DashboardPage() {
                                 title="Receitas do Mês"
                                 value={formatCurrency(stats.currentMonth.totalIncome)}
                                 color="success"
-                                icon={<Typography sx={{ fontSize: '3rem' }}>📈</Typography>}
+                                icon={<AnimatedIcon animationType="bounce" color="#4caf50"><FaChartLine size={40} /></AnimatedIcon>}
+                                delay={0.3}
                             />
                         </Grid>
 
@@ -160,7 +175,8 @@ export default function DashboardPage() {
                                 title="Despesas do Mês"
                                 value={formatCurrency(stats.currentMonth.totalExpense)}
                                 color="error"
-                                icon={<Typography sx={{ fontSize: '3rem' }}>📉</Typography>}
+                                icon={<AnimatedIcon animationType="pulse" color="#ff4444"><FaChartPie size={40} /></AnimatedIcon>}
+                                delay={0.4}
                             />
                         </Grid>
 
@@ -169,13 +185,43 @@ export default function DashboardPage() {
                                 title="Saldo Mensal"
                                 value={formatCurrency(stats.currentMonth.balance)}
                                 color={stats.currentMonth.balance >= 0 ? 'success' : 'error'}
-                                icon={<Typography sx={{ fontSize: '3rem' }}>📊</Typography>}
+                                icon={<AnimatedIcon animationType="rotate" color={stats.currentMonth.balance >= 0 ? '#4caf50' : '#ff4444'}><TbMoneybag size={48} /></AnimatedIcon>}
+                                delay={0.5}
                             />
                         </Grid>
                     </Grid>
                 </Box>
 
-                {/* Top Categorias */}
+                {/* Gráficos de Análise */}
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', mb: 3 }}>
+                        Análise Financeira
+                    </Typography>
+
+                    <Grid container spacing={3}>
+                        {/* Gráfico de Evolução Mensal */}
+                        {stats.monthlyHistory && stats.monthlyHistory.length > 0 && (
+                            <Grid size={{ xs: 12, lg: 8 }}>
+                                <IncomeExpenseChart
+                                    data={stats.monthlyHistory}
+                                    title="Evolução de Receitas e Despesas (6 meses)"
+                                />
+                            </Grid>
+                        )}
+
+                        {/* Gráfico de Pizza de Categorias */}
+                        {stats.topCategories.length > 0 && (
+                            <Grid size={{ xs: 12, lg: 4 }}>
+                                <CategoryPieChart
+                                    data={stats.topCategories}
+                                    title="Despesas por Categoria"
+                                />
+                            </Grid>
+                        )}
+                    </Grid>
+                </Box>
+
+                {/* Top Categorias (Tabela Detalhada) */}
                 {stats.topCategories.length > 0 && (
                     <Box sx={{ mt: 4 }}>
                         <Typography variant="h6" gutterBottom sx={{ color: '#ffffff' }}>
@@ -184,8 +230,8 @@ export default function DashboardPage() {
 
                         <Card sx={{
                             mt: 2,
-                            backgroundColor: '#212121',
-                            border: '1px solid #333333',
+                            backgroundColor: '#0a0a0a',
+                            border: '1px solid #1a1a1a',
                             borderRadius: 2
                         }}>
                             <CardContent>

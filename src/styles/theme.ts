@@ -40,8 +40,8 @@ export const theme = createTheme(
         dark: '#1976d2'
       },
       background: {
-        default: '#1a1a1a', // Fundo principal escuro
-        paper: '#212121' // Fundo dos cards/painéis
+        default: '#000000', // Fundo principal ultra escuro
+        paper: '#0a0a0a' // Fundo dos cards/painéis muito escuro
       },
       text: {
         primary: '#ffffff',

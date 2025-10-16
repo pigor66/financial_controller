@@ -23,7 +23,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return (
         <Box sx={{
             display: 'flex',
-            backgroundColor: '#1a1a1a',
+            backgroundColor: '#000000',
             minHeight: '100vh'
         }}>
             <AppBar onMenuClick={handleDrawerToggle} />
@@ -37,7 +37,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     p: 3,
                     width: { sm: `calc(100% - 240px)` },
                     minHeight: '100vh',
-                    backgroundColor: '#1a1a1a',
+                    backgroundColor: '#000000',
                 }}
             >
                 <Toolbar />

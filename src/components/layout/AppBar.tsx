@@ -27,8 +27,9 @@ export function AppBar({ onMenuClick }: AppBarProps) {
             position="fixed" 
             sx={{ 
                 zIndex: (theme) => theme.zIndex.drawer + 1,
-                backgroundColor: '#1a1a1a',
-                borderBottom: '1px solid #333333'
+                backgroundColor: '#0a0a0a',
+                borderBottom: '1px solid #1a1a1a',
+                boxShadow: 'none'
             }}
         >
             <Toolbar>
