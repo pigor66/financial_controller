@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "regions": ["gru1"],
+  "env": {
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL": "@google_service_account_email",
+    "GOOGLE_PRIVATE_KEY": "@google_private_key",
+    "GOOGLE_SPREADSHEET_ID": "@google_spreadsheet_id",
+    "GOOGLE_SHEET_NAME": "@google_sheet_name"
+  }
+}
