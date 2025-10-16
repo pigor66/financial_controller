@@ -15,25 +15,34 @@ import {
 } from '@mui/material';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { MonthSelector } from '@/components/common/MonthSelector';
 import { formatCurrency } from '@/lib/utils';
 import { DashboardStats } from '@/shared/types';
 import { CATEGORY_LABELS } from '@/shared/constants';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function ReportsPage() {
     const [stats, setStats] = React.useState<DashboardStats | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
 
     React.useEffect(() => {
         fetchStats();
-    }, []);
+    }, [selectedDate]);
 
     const fetchStats = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await fetch('/api/dashboard');
+            // Formata a data para enviar à API (YYYY-MM)
+            const year = selectedDate.getFullYear();
+            const month = selectedDate.getMonth() + 1; // getMonth() retorna 0-11
+            const dateParam = `${year}-${String(month).padStart(2, '0')}`;
+
+            const response = await fetch(`/api/dashboard?date=${dateParam}`);
             const data = await response.json();
 
             if (data.success) {
@@ -47,6 +56,10 @@ export default function ReportsPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDateChange = (newDate: Date) => {
+        setSelectedDate(newDate);
     };
 
     if (loading) {
@@ -83,10 +96,13 @@ export default function ReportsPage() {
                     Análise detalhada das suas finanças
                 </Typography>
 
+                {/* Seletor de Mês */}
+                <MonthSelector selectedDate={selectedDate} onDateChange={handleDateChange} />
+
                 {/* Resumo Mensal */}
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" gutterBottom>
-                        Resumo do Mês Atual
+                        Resumo de {format(selectedDate, 'MMMM yyyy', { locale: ptBR })}
                     </Typography>
 
                     <Grid container spacing={3} sx={{ mt: 1 }}>

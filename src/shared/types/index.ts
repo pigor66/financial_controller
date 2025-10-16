@@ -71,11 +71,17 @@ export interface MonthlyHistoryData {
   balance: number;
 }
 
+export interface AccumulatedWealthData {
+  month: string;
+  accumulated: number;
+}
+
 export interface DashboardStats {
   currentWeek: WeeklySummary;
   currentMonth: MonthlySummary;
   topCategories: CategorySummary[];
   monthlyHistory?: MonthlyHistoryData[];
+  accumulatedWealth?: AccumulatedWealthData[];
 }
 
 export interface ApiResponse<T> {

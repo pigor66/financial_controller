@@ -30,7 +30,8 @@ import {
   isWithinInterval,
   addDays,
   isBefore,
-  isAfter
+  isAfter,
+  addWeeks
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { FINANCIAL_WEEK_CONFIG } from '@/shared/constants';
@@ -163,15 +164,62 @@ export async function getWeeklySummary(
 }
 
 /**
- * Calcula as semanas financeiras do mês baseado no dia configurado
+ * Calcula as semanas baseadas em segundas-feiras
+ * Cada semana vai de segunda a domingo
+ */
+function getMondayBasedWeeks(
+  targetDate: Date
+): { weekStart: Date; weekEnd: Date }[] {
+  const weeks: { weekStart: Date; weekEnd: Date }[] = [];
+  const monthStart = startOfMonth(targetDate);
+  const monthEnd = endOfMonth(targetDate);
+
+  // Encontra a primeira segunda-feira do mês
+  let currentMonday = startOfWeek(monthStart, { weekStartsOn: 1 });
+
+  // Se a primeira segunda está antes do começo do mês, avança para a próxima
+  if (currentMonday < monthStart) {
+    currentMonday = addWeeks(currentMonday, 1);
+  }
+
+  // Adiciona semana parcial do início do mês (se houver dias antes da primeira segunda)
+  if (currentMonday > monthStart) {
+    const firstSunday = addDays(currentMonday, -1);
+    weeks.push({
+      weekStart: monthStart,
+      weekEnd: firstSunday
+    });
+  }
+
+  // Adiciona todas as semanas completas (segunda a domingo)
+  while (currentMonday <= monthEnd) {
+    let weekEnd = endOfWeek(currentMonday, { weekStartsOn: 1 });
+
+    // Se o final da semana ultrapassa o mês, ajusta
+    if (weekEnd > monthEnd) {
+      weekEnd = monthEnd;
+    }
+
+    weeks.push({
+      weekStart: new Date(currentMonday),
+      weekEnd: new Date(weekEnd)
+    });
+
+    // Próxima segunda-feira
+    currentMonday = addWeeks(currentMonday, 1);
+  }
+
+  return weeks;
+}
+
+/**
+ * Calcula as semanas financeiras do mês baseado no dia configurado (modo legado)
  * Exemplo: Se START_DAY = 13, então:
  * - Semana 1: 13 ao 19
  * - Semana 2: 20 ao 26
  * - E assim por diante...
  */
-function getFinancialWeeksOfMonth(
-  date: Date
-): { weekStart: Date; weekEnd: Date }[] {
+function getFixedDayWeeks(date: Date): { weekStart: Date; weekEnd: Date }[] {
   const year = date.getFullYear();
   const month = date.getMonth();
   const startDay = FINANCIAL_WEEK_CONFIG.START_DAY;
@@ -218,6 +266,19 @@ function getFinancialWeeksOfMonth(
   }
 
   return weeks;
+}
+
+/**
+ * Calcula as semanas financeiras do mês baseado no modo configurado
+ */
+function getFinancialWeeksOfMonth(
+  date: Date
+): { weekStart: Date; weekEnd: Date }[] {
+  if (FINANCIAL_WEEK_CONFIG.MODE === 'MONDAY') {
+    return getMondayBasedWeeks(date);
+  } else {
+    return getFixedDayWeeks(date);
+  }
 }
 
 /**

@@ -1,20 +1,15 @@
 # 📅 Como Configurar o Início das Semanas Financeiras
 
-Este guia explica como personalizar o dia do mês em que as semanas financeiras começam.
+Este guia explica como personalizar a forma como as semanas financeiras são calculadas.
 
 ---
 
 ## 🎯 **O que é isso?**
 
-Por padrão, as semanas são contadas a partir do **dia 1** de cada mês. Mas você pode mudar para qualquer dia!
+Você pode configurar de duas formas:
 
-**Exemplo:**
-
-- Se configurar para começar no **dia 13**:
-  - Semana 1: dias 13 a 19
-  - Semana 2: dias 20 a 26
-  - Semana 3: dias 27 ao último dia do mês
-  - Semana 0 (parcial): dias 1 a 12
+1. **Modo Segunda-feira (RECOMENDADO)**: As semanas sempre começam na segunda-feira e terminam no domingo
+2. **Modo Dia Fixo**: As semanas começam em um dia específico do mês
 
 ---
 
@@ -29,20 +24,34 @@ Abra o arquivo: `src/shared/constants/index.ts`
 Procure por esta seção no final do arquivo:
 
 ```typescript
-// Configuração do início da semana financeira
 export const FINANCIAL_WEEK_CONFIG = {
-  // Dia do mês em que começa a contagem (1 a 31)
-  START_DAY: 1 // Altere este valor conforme necessário
+  // Modo de cálculo das semanas:
+  // 'MONDAY': Semanas sempre começam na segunda-feira (recomendado)
+  // 'FIXED_DAY': Semanas começam em um dia fixo do mês
+  MODE: 'MONDAY' as 'MONDAY' | 'FIXED_DAY',
+
+  // Dia fixo do mês (usado apenas quando MODE = 'FIXED_DAY')
+  START_DAY: 15
 };
 ```
 
-### **Passo 3: Alterar o dia**
+### **Passo 3: Escolher o modo desejado**
 
-Mude o valor de `START_DAY` para o dia desejado:
+#### **Opção A: Usar Segundas-feiras (Recomendado)**
 
 ```typescript
 export const FINANCIAL_WEEK_CONFIG = {
-  START_DAY: 13 // Agora as semanas começam no dia 13
+  MODE: 'MONDAY' as 'MONDAY' | 'FIXED_DAY',
+  START_DAY: 15 // Ignorado quando MODE = 'MONDAY'
+};
+```
+
+#### **Opção B: Usar dia fixo do mês**
+
+```typescript
+export const FINANCIAL_WEEK_CONFIG = {
+  MODE: 'FIXED_DAY' as 'MONDAY' | 'FIXED_DAY',
+  START_DAY: 13 // As semanas começam no dia 13 de cada mês
 };
 ```
 
@@ -58,10 +67,37 @@ yarn dev
 
 ## 📊 **Exemplos de Configuração**
 
-### **Exemplo 1: Dia 1 (padrão)**
+### **Exemplo 1: Modo Segunda-feira (RECOMENDADO)**
 
 ```typescript
-START_DAY: 1;
+MODE: 'MONDAY' as 'MONDAY' | 'FIXED_DAY',
+```
+
+**Resultado para Outubro/2025:**
+
+Outubro de 2025 começa numa quarta-feira (01/10)
+
+```
+Semana 0 (parcial): 01/10 (qua) a 05/10 (dom)
+Semana 1: 06/10 (seg) a 12/10 (dom)
+Semana 2: 13/10 (seg) a 19/10 (dom)  ← Exemplo: dia 16/10 está aqui
+Semana 3: 20/10 (seg) a 26/10 (dom)
+Semana 4: 27/10 (seg) a 31/10 (sex)
+```
+
+✅ **Vantagens:**
+
+- Sempre previsível (toda segunda começa uma semana)
+- Fácil de entender
+- Padrão internacional
+
+---
+
+### **Exemplo 2: Modo Dia Fixo - Dia 1**
+
+```typescript
+MODE: 'FIXED_DAY' as 'MONDAY' | 'FIXED_DAY',
+START_DAY: 1,
 ```
 
 **Resultado para Outubro/2025:**
@@ -76,10 +112,11 @@ Semana 5: 29/10 a 31/10
 
 ---
 
-### **Exemplo 2: Dia 13**
+### **Exemplo 3: Modo Dia Fixo - Dia 13**
 
 ```typescript
-START_DAY: 13;
+MODE: 'FIXED_DAY' as 'MONDAY' | 'FIXED_DAY',
+START_DAY: 13,
 ```
 
 **Resultado para Outubro/2025:**
@@ -93,10 +130,11 @@ Semana 3: 27/10 a 31/10
 
 ---
 
-### **Exemplo 3: Dia 5 (útil para quem recebe no dia 5)**
+### **Exemplo 4: Modo Dia Fixo - Dia 5 (útil para quem recebe no dia 5)**
 
 ```typescript
-START_DAY: 5;
+MODE: 'FIXED_DAY' as 'MONDAY' | 'FIXED_DAY',
+START_DAY: 5,
 ```
 
 **Resultado para Outubro/2025:**
@@ -111,10 +149,11 @@ Semana 4: 26/10 a 31/10
 
 ---
 
-### **Exemplo 4: Dia 25 (útil para quem recebe no dia 25)**
+### **Exemplo 5: Modo Dia Fixo - Dia 25 (útil para quem recebe no dia 25)**
 
 ```typescript
-START_DAY: 25;
+MODE: 'FIXED_DAY' as 'MONDAY' | 'FIXED_DAY',
+START_DAY: 25,
 ```
 
 **Resultado para Outubro/2025:**
@@ -135,29 +174,57 @@ Semana 1: 25/11 a 30/11
 
 ## 💡 **Casos de Uso**
 
+### **🌍 Padrão Internacional (Recomendado)**
+
+Use o modo `MONDAY` para seguir o padrão internacional onde as semanas sempre começam na segunda-feira.
+
 ### **📅 Dia do Salário**
 
-Se você recebe salário no dia 5, configure `START_DAY: 5` para que suas semanas comecem quando o dinheiro entra.
+Se você recebe salário no dia 5, use:
+
+```typescript
+MODE: 'FIXED_DAY',
+START_DAY: 5
+```
 
 ### **💳 Fechamento do Cartão**
 
-Se seu cartão fecha no dia 20, configure `START_DAY: 20` para acompanhar melhor os gastos por ciclo.
+Se seu cartão fecha no dia 20, use:
+
+```typescript
+MODE: 'FIXED_DAY',
+START_DAY: 20
+```
 
 ### **🏠 Dia do Aluguel**
 
-Se paga aluguel no dia 10, configure `START_DAY: 10` para organizar suas finanças a partir desse dia.
+Se paga aluguel no dia 10, use:
+
+```typescript
+MODE: 'FIXED_DAY',
+START_DAY: 10
+```
 
 ---
 
 ## ⚠️ **Observações Importantes**
 
-### **1. Meses com menos de 31 dias**
+### **Modo MONDAY**
+
+- ✅ As semanas sempre começam na **segunda-feira** e terminam no **domingo**
+- ✅ Completamente independente do dia do mês
+- ✅ Se o mês não começa numa segunda, cria uma semana parcial no início
+- ✅ Se o mês não termina num domingo, a última semana é parcial
+
+### **Modo FIXED_DAY**
+
+#### **1. Meses com menos de 31 dias**
 
 Se você configurar `START_DAY: 31`, em meses com menos dias (como fevereiro):
 
 - O sistema automaticamente ajusta para o **último dia do mês**
 
-### **2. Semana "0" (parcial)**
+#### **2. Semana "0" (parcial)**
 
 Quando você configura um dia maior que 1, o sistema cria uma **Semana 0** que vai do dia 1 até o dia anterior ao configurado.
 
@@ -168,7 +235,7 @@ Semana 0: 01/10 a 12/10 (dias anteriores ao início configurado)
 Semana 1: 13/10 a 19/10 (primeira semana completa)
 ```
 
-### **3. Última semana**
+#### **3. Última semana**
 
 A última semana sempre vai até o **último dia do mês**, mesmo que não complete 7 dias.
 
@@ -176,7 +243,14 @@ A última semana sempre vai até o **último dia do mês**, mesmo que não compl
 
 ## 🔄 **Como funciona tecnicamente**
 
-A lógica implementada:
+### **Modo MONDAY:**
+
+1. **Encontra todas as segundas-feiras do mês**
+2. **Cria períodos de segunda a domingo**
+3. **Adiciona semana parcial** no início (se o mês não começa na segunda)
+4. **Ajusta a última semana** para terminar no último dia do mês
+
+### **Modo FIXED_DAY:**
 
 1. **Define o dia inicial** com base em `START_DAY`
 2. **Cria períodos de 7 dias** a partir desse dia

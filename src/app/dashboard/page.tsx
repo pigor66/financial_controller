@@ -29,6 +29,7 @@ import { PendingTransactionsBanner } from '@/components/features/PendingTransact
 import { AnimatedIcon } from '@/components/common/AnimatedIcon';
 import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
+import { AccumulatedWealthChart } from '@/components/charts/AccumulatedWealthChart';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { DashboardStats } from '@/shared/types';
 
@@ -220,6 +221,16 @@ export default function DashboardPage() {
                         )}
                     </Grid>
                 </Box>
+
+                {/* Gráfico de Patrimônio Acumulado */}
+                {stats.accumulatedWealth && stats.accumulatedWealth.length > 0 && (
+                    <Box sx={{ mt: 4 }}>
+                        <AccumulatedWealthChart
+                            data={stats.accumulatedWealth}
+                            title="Patrimônio Acumulado"
+                        />
+                    </Box>
+                )}
 
                 {/* Top Categorias (Tabela Detalhada) */}
                 {stats.topCategories.length > 0 && (

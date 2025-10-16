@@ -9,6 +9,7 @@ import * as React from 'react';
 import { Box, IconButton, Typography } from '@mui/material';
 import { format, addMonths, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { FINANCIAL_WEEK_CONFIG } from '@/shared/constants';
 
 interface MonthSelectorProps {
     selectedDate: Date;
@@ -63,7 +64,10 @@ export function MonthSelector({ selectedDate, onDateChange }: MonthSelectorProps
                     {format(selectedDate, 'MMMM yyyy', { locale: ptBR })}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#b0b0b0' }}>
-                    Semana 1 começa no dia 15
+                    {FINANCIAL_WEEK_CONFIG.MODE === 'MONDAY'
+                        ? 'Semanas começam na segunda-feira'
+                        : `Semana 1 começa no dia ${FINANCIAL_WEEK_CONFIG.START_DAY}`
+                    }
                 </Typography>
             </Box>
 

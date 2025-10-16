@@ -7,6 +7,7 @@ import {
   DashboardStats,
   TransactionType,
   MonthlyHistoryData,
+  AccumulatedWealthData,
   Transaction
 } from '@/shared/types';
 import { getTransactions } from './transaction.service';
@@ -18,20 +19,75 @@ import {
   isWithinInterval,
   parseISO,
   addDays,
-  isAfter
+  isAfter,
+  startOfWeek,
+  endOfWeek,
+  addWeeks,
+  isSameMonth
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { FINANCIAL_WEEK_CONFIG } from '@/shared/constants';
 
 /**
- * Calcula as semanas financeiras do mês baseado no dia configurado
+ * Calcula as semanas baseadas em segundas-feiras
+ * Cada semana vai de segunda a domingo
+ */
+function getMondayBasedWeeks(
+  targetDate: Date
+): { weekStart: Date; weekEnd: Date }[] {
+  const weeks: { weekStart: Date; weekEnd: Date }[] = [];
+  const monthStart = startOfMonth(targetDate);
+  const monthEnd = endOfMonth(targetDate);
+
+  // Encontra a primeira segunda-feira do mês
+  let currentMonday = startOfWeek(monthStart, { weekStartsOn: 1 });
+
+  // Se a primeira segunda está antes do começo do mês, avança para a próxima
+  if (currentMonday < monthStart) {
+    currentMonday = addWeeks(currentMonday, 1);
+  }
+
+  // Adiciona semana parcial do início do mês (se houver dias antes da primeira segunda)
+  if (currentMonday > monthStart) {
+    const firstSunday = addDays(currentMonday, -1);
+    weeks.push({
+      weekStart: monthStart,
+      weekEnd: firstSunday
+    });
+  }
+
+  // Adiciona todas as semanas completas (segunda a domingo)
+  while (currentMonday <= monthEnd) {
+    let weekEnd = endOfWeek(currentMonday, { weekStartsOn: 1 });
+
+    // Se o final da semana ultrapassa o mês, ajusta
+    if (weekEnd > monthEnd) {
+      weekEnd = monthEnd;
+    }
+
+    weeks.push({
+      weekStart: new Date(currentMonday),
+      weekEnd: new Date(weekEnd)
+    });
+
+    // Próxima segunda-feira
+    currentMonday = addWeeks(currentMonday, 1);
+  }
+
+  return weeks;
+}
+
+/**
+ * Calcula as semanas financeiras do mês baseado no dia configurado (modo legado)
  * Exemplo: se START_DAY = 15, as semanas são:
  * - 01 a 14 (semana parcial)
  * - 15 a 21 (semana 1)
  * - 22 a 28 (semana 2)
  * - 29 a 31 (semana 3)
  */
-function getFinancialWeeksOfMonth(targetDate: Date): { weekStart: Date; weekEnd: Date }[] {
+function getFixedDayWeeks(
+  targetDate: Date
+): { weekStart: Date; weekEnd: Date }[] {
   const startDay = FINANCIAL_WEEK_CONFIG.START_DAY;
   const year = targetDate.getFullYear();
   const month = targetDate.getMonth();
@@ -64,6 +120,19 @@ function getFinancialWeeksOfMonth(targetDate: Date): { weekStart: Date; weekEnd:
   }
 
   return weeks;
+}
+
+/**
+ * Calcula as semanas financeiras do mês baseado no modo configurado
+ */
+function getFinancialWeeksOfMonth(
+  targetDate: Date
+): { weekStart: Date; weekEnd: Date }[] {
+  if (FINANCIAL_WEEK_CONFIG.MODE === 'MONDAY') {
+    return getMondayBasedWeeks(targetDate);
+  } else {
+    return getFixedDayWeeks(targetDate);
+  }
 }
 
 /**
@@ -226,26 +295,35 @@ export async function getDashboardStats(
   const topCategories = getCategoryBreakdown(monthTransactions).slice(0, 5);
 
   // Calcula semanas do mês atual para o reports
-  const weeksSummary = getFinancialWeeksOfMonth(targetDate).map(({ weekStart, weekEnd }) => {
-    const weekTransactions = monthTransactions.filter((t) => {
-      const transactionDate = parseISO(t.date);
-      return isWithinInterval(transactionDate, { start: weekStart, end: weekEnd });
-    });
-    
-    const weekStats = calculateStats(weekTransactions);
-    return {
-      weekStart: weekStart.toISOString(),
-      weekEnd: weekEnd.toISOString(),
-      totalIncome: weekStats.totalIncome,
-      totalExpense: weekStats.totalExpense,
-      balance: weekStats.balance,
-      transactions: weekTransactions
-    };
-  });
+  const weeksSummary = getFinancialWeeksOfMonth(targetDate).map(
+    ({ weekStart, weekEnd }) => {
+      const weekTransactions = monthTransactions.filter((t) => {
+        const transactionDate = parseISO(t.date);
+        return isWithinInterval(transactionDate, {
+          start: weekStart,
+          end: weekEnd
+        });
+      });
+
+      const weekStats = calculateStats(weekTransactions);
+      return {
+        weekStart: weekStart.toISOString(),
+        weekEnd: weekEnd.toISOString(),
+        totalIncome: weekStats.totalIncome,
+        totalExpense: weekStats.totalExpense,
+        balance: weekStats.balance,
+        transactions: weekTransactions
+      };
+    }
+  );
 
   // Histórico mensal (últimos 6 meses)
   const monthlyHistory: MonthlyHistoryData[] = [];
+  const accumulatedWealth: AccumulatedWealthData[] = [];
+
   if (includeHistory) {
+    let accumulatedValue = 0;
+
     for (let i = 5; i >= 0; i--) {
       const monthDate = subMonths(targetDate, i);
       const mStart = startOfMonth(monthDate);
@@ -262,6 +340,13 @@ export async function getDashboardStats(
         income: stats.totalIncome,
         expense: stats.totalExpense,
         balance: stats.balance
+      });
+
+      // Calcula o patrimônio acumulado
+      accumulatedValue += stats.balance;
+      accumulatedWealth.push({
+        month: format(monthDate, 'MMM/yy', { locale: ptBR }),
+        accumulated: accumulatedValue
       });
     }
   }
@@ -283,6 +368,7 @@ export async function getDashboardStats(
       weeksSummary
     },
     topCategories,
-    monthlyHistory
+    monthlyHistory,
+    accumulatedWealth
   };
 }

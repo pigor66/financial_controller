@@ -87,6 +87,12 @@ export const PAGINATION = {
 };
 
 export const FINANCIAL_WEEK_CONFIG = {
+  // Modo de cálculo das semanas:
+  // 'MONDAY': Semanas sempre começam na segunda-feira (recomendado)
+  // 'FIXED_DAY': Semanas começam em um dia fixo do mês
+  MODE: 'MONDAY' as 'MONDAY' | 'FIXED_DAY',
+
+  // Dia fixo do mês (usado apenas quando MODE = 'FIXED_DAY')
   START_DAY: 15
 };
 
