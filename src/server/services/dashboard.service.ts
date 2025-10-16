@@ -154,22 +154,34 @@ export async function getDashboardStats(
 
   console.log('📊 Dashboard Stats Debug:');
   console.log(`  Total transactions found: ${allTransactions.length}`);
-  console.log(`  Date range: ${oldestDate.toISOString().split('T')[0]} to ${newestDate.toISOString().split('T')[0]}`);
-  
+  console.log(
+    `  Date range: ${oldestDate.toISOString().split('T')[0]} to ${
+      newestDate.toISOString().split('T')[0]
+    }`
+  );
+
   if (allTransactions.length > 0) {
-    console.log(`  First transaction: ${allTransactions[0].date} - ${allTransactions[0].description}`);
-    console.log(`  Last transaction: ${allTransactions[allTransactions.length - 1].date}`);
+    console.log(
+      `  First transaction: ${allTransactions[0].date} - ${allTransactions[0].description}`
+    );
+    console.log(
+      `  Last transaction: ${allTransactions[allTransactions.length - 1].date}`
+    );
   }
 
   // Semana atual (baseado no FINANCIAL_WEEK_CONFIG)
   const { weekStart, weekEnd } = getFinancialWeek(targetDate);
-  console.log(`  Current week: ${weekStart.toISOString().split('T')[0]} to ${weekEnd.toISOString().split('T')[0]}`);
-  
+  console.log(
+    `  Current week: ${weekStart.toISOString().split('T')[0]} to ${
+      weekEnd.toISOString().split('T')[0]
+    }`
+  );
+
   const weekTransactions = allTransactions.filter((t) =>
     isWithinInterval(parseISO(t.date), { start: weekStart, end: weekEnd })
   );
   console.log(`  Week transactions: ${weekTransactions.length}`);
-  
+
   const weekStats = calculateStats(weekTransactions);
 
   // Mês atual

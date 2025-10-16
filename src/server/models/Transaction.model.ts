@@ -30,10 +30,40 @@ export async function findAllTransactions(): Promise<Transaction[]> {
     });
 
     const rows = response.data.values || [];
-    return rows.map(rowToTransaction);
+    const transactions = rows.map(rowToTransaction);
+
+    console.log('📊 Google Sheets Data:');
+    console.log(`  Total rows in sheet: ${rows.length}`);
+
+    if (transactions.length > 0) {
+      console.log(`  First 3 transactions:`);
+      transactions.slice(0, 3).forEach((t, i) => {
+        console.log(
+          `    ${i + 1}. Date: ${t.date} | ${t.description} | R$ ${
+            t.amount
+          } | ${t.type}`
+        );
+      });
+
+      // Agrupa por ano para ver distribuição
+      const byYear = transactions.reduce((acc, t) => {
+        const year = t.date?.split('-')[0] || 'invalid';
+        acc[year] = (acc[year] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      console.log(`  Transactions by year:`, byYear);
+    } else {
+      console.log(`  ⚠️  NO TRANSACTIONS FOUND IN GOOGLE SHEETS!`);
+      console.log(
+        `  Check: https://docs.google.com/spreadsheets/d/${spreadsheetId}`
+      );
+    }
+
+    return transactions;
   } catch (error) {
-    console.error('Erro ao buscar transações:', error);
-    throw new Error('Falha ao buscar transações');
+    console.error('❌ Error fetching transactions:', error);
+    throw new Error('Failed to fetch transactions');
   }
 }
 
